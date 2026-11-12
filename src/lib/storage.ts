@@ -18,7 +18,7 @@ export async function saveImage(bytes: Uint8Array): Promise<string | null> {
   if (!kind) return null;
   const name = `${randomBytes(16).toString("hex")}.${kind.ext}`;
   await mkdir(uploadDir(), { recursive: true });
-  await writeFile(path.join(uploadDir(), name), bytes, { mode: 0o600 });
+  await writeFile(path.join(/*turbopackIgnore: true*/ uploadDir(), name), bytes, { mode: 0o600 });
   return name;
 }
 
@@ -26,7 +26,7 @@ export async function readStoredFile(name: string): Promise<{ bytes: Buffer; mim
   // The strict name pattern is what prevents path traversal.
   if (!FILE_NAME.test(name)) return null;
   try {
-    const bytes = await readFile(path.join(uploadDir(), name));
+    const bytes = await readFile(path.join(/*turbopackIgnore: true*/ uploadDir(), name));
     return { bytes, mime: MIME_BY_EXT[name.split(".")[1]] };
   } catch {
     return null;
@@ -35,5 +35,5 @@ export async function readStoredFile(name: string): Promise<{ bytes: Buffer; mim
 
 export async function deleteStoredFile(name: string | null | undefined) {
   if (!name || !FILE_NAME.test(name)) return;
-  await unlink(path.join(uploadDir(), name)).catch(() => {});
+  await unlink(path.join(/*turbopackIgnore: true*/ uploadDir(), name)).catch(() => {});
 }

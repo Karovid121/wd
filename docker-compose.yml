@@ -1,0 +1,21 @@
+# Local PostgreSQL for development: docker compose up -d
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nexora
+      POSTGRES_PASSWORD: nexora
+      POSTGRES_DB: nexora
+    ports:
+      - "5432:5432"
+    volumes:
+      - nexora-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexora -d nexora"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  nexora-db:

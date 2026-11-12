@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Menu, Users } from "lucide-react";
 import { ApiError, api } from "@/lib/api";
 import type { PublicUser, SelfUser, Status } from "@/lib/types";
@@ -16,6 +15,11 @@ const HEARTBEAT_MS = 30_000;
 const CARD_WIDTH = 320;
 const CARD_HEIGHT = 400;
 
+/** Full page load, so nothing from the signed-in session stays in memory or in preserved pages. */
+function leaveToLogin() {
+  window.location.replace("/login");
+}
+
 export type OpenProfile = (user: PublicUser, anchor: HTMLElement) => void;
 
 export function AppShell({ initialUser }: { initialUser: SelfUser }) {
@@ -26,7 +30,6 @@ export function AppShell({ initialUser }: { initialUser: SelfUser }) {
   const [navOpen, setNavOpen] = useState(false);
   const [membersInline, setMembersInline] = useState(true);
   const [membersDrawer, setMembersDrawer] = useState(false);
-  const router = useRouter();
 
   const beat = useCallback(async () => {
     try {
@@ -34,9 +37,9 @@ export function AppShell({ initialUser }: { initialUser: SelfUser }) {
       setMe(res.me);
       setUsers(res.users);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) router.replace("/login");
+      if (err instanceof ApiError && err.status === 401) leaveToLogin();
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     // Deferred a tick so the first heartbeat runs as a callback rather than inside the effect body.
@@ -61,8 +64,8 @@ export function AppShell({ initialUser }: { initialUser: SelfUser }) {
 
   const logout = useCallback(async () => {
     await api("/api/auth/logout", { method: "POST" }).catch(() => {});
-    router.replace("/login");
-  }, [router]);
+    leaveToLogin();
+  }, []);
 
   const openProfile = useCallback<OpenProfile>((user, anchor) => {
     const rect = anchor.getBoundingClientRect();

@@ -50,7 +50,7 @@ Already have PostgreSQL? Skip step 2 and point `DATABASE_URL` in `.env` at an em
 | `DATABASE_URL` | yes | PostgreSQL connection string. |
 | `UPLOAD_DIR` | no | Where uploaded avatars are stored. Defaults to `./uploads`. |
 | `APP_ORIGIN` | no | Public URL of the app. Set it when a reverse proxy changes the `Host` header. |
-| `SESSION_COOKIE_SAMESITE` | no | `lax` (default), `strict` or `none`. |
+| `SESSION_COOKIE_SAMESITE` | no | `lax` (default), `strict` or `none`. Use `none` only when the app is embedded inside another site, such as a preview panel; it requires HTTPS. |
 | `SESSION_COOKIE_SECURE` | no | `true` or `false`. Defaults to `true` in production. |
 | `DEV_ALLOWED_ORIGINS` | no | Development only. Extra hostnames allowed to load the dev server, comma-separated. |
 

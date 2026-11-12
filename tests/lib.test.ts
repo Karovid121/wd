@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { sessionCookieAttributes } from "@/lib/cookie-options";
 import { sniffImage } from "@/lib/image";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { rateLimit, resetRateLimits } from "@/lib/rate-limit";
@@ -53,6 +54,23 @@ describe("validation", () => {
 
   it("drops fields a client must not set", () => {
     expect(profileUpdateSchema.parse({ bio: "hi", passwordHash: "x", id: "y" })).toEqual({ bio: "hi" });
+  });
+});
+
+describe("session cookie attributes", () => {
+  it("defaults to an HttpOnly Lax cookie that is Secure only in production", () => {
+    expect(sessionCookieAttributes({})).toEqual({ httpOnly: true, path: "/", sameSite: "lax", secure: false });
+    expect(sessionCookieAttributes({ NODE_ENV: "production" }).secure).toBe(true);
+    expect(sessionCookieAttributes({ NODE_ENV: "production", SESSION_COOKIE_SECURE: "false" }).secure).toBe(false);
+  });
+
+  it("makes an embeddable cookie Secure and Partitioned, whatever else is set", () => {
+    const attrs = sessionCookieAttributes({ SESSION_COOKIE_SAMESITE: "None", SESSION_COOKIE_SECURE: "false" });
+    expect(attrs).toEqual({ httpOnly: true, path: "/", sameSite: "none", secure: true, partitioned: true });
+  });
+
+  it("falls back to Lax for unknown values", () => {
+    expect(sessionCookieAttributes({ SESSION_COOKIE_SAMESITE: "whatever" }).sameSite).toBe("lax");
   });
 });
 

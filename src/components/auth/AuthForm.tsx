@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, Field } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
@@ -13,7 +12,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const set = (key: keyof typeof values) => (value: string) => {
     setValues((v) => ({ ...v, [key]: value }));
@@ -29,7 +27,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setLoading(true);
     try {
       await api(`/api/auth/${mode}`, { method: "POST", json: parsed.data });
-      router.replace("/");
     } catch (err) {
       setLoading(false);
       if (err instanceof ApiError) {
@@ -38,7 +35,27 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       } else {
         setFormError("Something went wrong");
       }
+      return;
     }
+
+    // The server accepted the sign-in. Confirm the browser kept the session cookie before leaving
+    // this page; without it the app would bounce straight back here and appear to load forever.
+    try {
+      await api("/api/me");
+    } catch (err) {
+      setLoading(false);
+      setFormError(
+        err instanceof ApiError && err.status === 401
+          ? `${isRegister ? "Your account was created" : "Your password was correct"}, but your browser didn't keep you signed in. ` +
+              "This happens when cookies are blocked or Nexora is embedded inside another site. " +
+              `Allow cookies for this site or open Nexora in its own tab, then ${isRegister ? "log in" : "try again"}.`
+          : "Signed in, but the app could not be reached. Check your connection and try again.",
+      );
+      return;
+    }
+    // A full page load, not a client-side navigation: Next.js keeps visited pages alive in the
+    // background, which would bring this form back later still "loading" and holding the password.
+    window.location.replace("/");
   }
 
   return (

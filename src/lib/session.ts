@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import type { Session, User } from "@/generated/prisma/client";
+import { sessionCookieAttributes } from "./cookie-options";
 import { db } from "./db";
 
 export const SESSION_COOKIE = "nexora_session";
@@ -11,15 +12,7 @@ const REFRESH_AFTER_MS = 24 * 60 * 60 * 1000;
 const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
 function cookieOptions(expires: Date) {
-  const sameSite = (process.env.SESSION_COOKIE_SAMESITE || "lax").toLowerCase();
-  const secureEnv = process.env.SESSION_COOKIE_SECURE;
-  return {
-    httpOnly: true,
-    path: "/",
-    expires,
-    sameSite: (["lax", "strict", "none"].includes(sameSite) ? sameSite : "lax") as "lax" | "strict" | "none",
-    secure: secureEnv ? secureEnv === "true" : process.env.NODE_ENV === "production",
-  };
+  return { ...sessionCookieAttributes(), expires };
 }
 
 /** Creates a session and sets its cookie. Only callable from route handlers or server functions. */

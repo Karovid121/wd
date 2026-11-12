@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rail: #090a0e;
+  --color-side: #0f1117;
+  --color-main: #14171e;
+  --color-elev: #1a1e27;
+  --color-hover: #222733;
+  --color-line: #262b37;
+  --color-fg: #e8eaf0;
+  --color-muted: #8b93a4;
+  --color-faint: #5d6474;
+  --color-accent: #7c63ff;
+  --color-accent-strong: #6a50f2;
+  --color-accent-soft: #a594ff;
+  --color-cyan: #37d6e6;
+  --color-online: #2fd386;
+  --color-idle: #f4b23e;
+  --color-busy: #f1506d;
+  --color-offline: #697082;
+  --color-danger: #f1506d;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --animate-fade: fade 0.18s ease-out both;
+  --animate-pop: pop 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-rise: rise 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-drift: drift 16s ease-in-out infinite alternate;
+
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(4px);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+  @keyframes drift {
+    to {
+      transform: translate(6%, -8%) scale(1.15);
+    }
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-main);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-soft);
+  outline-offset: 2px;
+}
+
+button:not(:disabled),
+[role="button"] {
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

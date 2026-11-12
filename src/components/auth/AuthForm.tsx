@@ -1,10 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Field } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { fieldErrors, loginSchema, registerSchema } from "@/lib/validation";
+
+// TEMPORARY diagnostics — reports which kinds of cookie this browser keeps, and the page's context.
+async function cookieProbe() {
+  try {
+    await fetch("/api/debug/cookie-probe", { credentials: "same-origin" });
+    let jsCookie = false;
+    try {
+      document.cookie = "p_js=1; path=/";
+      jsCookie = document.cookie.includes("p_js=1");
+    } catch {}
+    const doc = document as Document & { hasStorageAccess?: () => Promise<boolean> };
+    const client = {
+      embedded: window.top !== window.self,
+      ancestorOrigins: Array.from(location.ancestorOrigins ?? []),
+      origin: location.origin,
+      referrer: document.referrer.split("?")[0],
+      cookieEnabled: navigator.cookieEnabled,
+      jsCookie,
+      jsVisible: document.cookie.split(";").map((c) => c.split("=")[0].trim()),
+      hasStorageAccess: await doc.hasStorageAccess?.().catch(() => "error"),
+      credentialless: (window as Window & { credentialless?: boolean }).credentialless ?? null,
+      secureContext: window.isSecureContext,
+    };
+    await fetch("/api/debug/cookie-probe", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(client),
+    });
+  } catch {}
+}
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const isRegister = mode === "register";
@@ -12,6 +43,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
+  useEffect(() => void cookieProbe(), []); // TEMPORARY diagnostics
 
   const set = (key: keyof typeof values) => (value: string) => {
     setValues((v) => ({ ...v, [key]: value }));
